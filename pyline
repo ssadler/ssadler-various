@@ -1,0 +1,18 @@
+#!/usr/bin/python
+
+import sys, os
+from functools import partial
+
+shortcuts = {
+    'until': lambda l, needle: s.split(needle, 1)[0],
+}
+
+i = 0
+for line in sys.stdin:
+    line = line[:-1]
+    for name, func in shortcuts.items():
+        locals()[name] = partial(func, line)
+    r = lambda cmd: os.system(cmd % line)
+    exec sys.argv[1]
+    i += 1
+
