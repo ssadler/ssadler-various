@@ -7,7 +7,7 @@ shortcuts = {
     'until': lambda l, needle: s.split(needle, 1)[0],
 }
 
-i = 0
+i = 1
 for line in sys.stdin:
     line = line[:-1]
     for name, func in shortcuts.items():
