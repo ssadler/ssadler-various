@@ -3,16 +3,27 @@
 import sys, os
 from functools import partial
 
+code_part = partial(compile, sys.argv[1], __file__);
+try:
+    mode = 'eval'
+    code = code_part(mode)
+except SyntaxError:
+    mode = 'exec'
+    code = code_part(mode)
+
 shortcuts = {
-    'until': lambda l, needle: s.split(needle, 1)[0],
+    'run': lambda line, cmd: os.system(cmd.replace('%s', line)),
+    's': lambda line, char, index=0: line.split(char, index+1)[index],
 }
 
 i = 1
-for line in sys.stdin:
-    line = line[:-1]
-    for name, func in shortcuts.items():
-        locals()[name] = partial(func, line)
-    r = lambda cmd: os.system(cmd % line)
-    exec sys.argv[1]
-    i += 1
-
+try:
+    for line in sys.stdin:
+        l = line = line[:-1]
+        for shortcut_name, func in shortcuts.items(): locals()[shortcut_name] = partial(func, line)
+        out = eval(code, globals(), locals())
+        if mode == 'eval' and out:
+            print out
+        i += 1
+except KeyboardInterrupt:
+    sys.exit(1)
