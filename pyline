@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import sys, os
+import sys, os, re
 from functools import partial
+from itertools import *
 
-code_part = partial(compile, sys.argv[1], __file__);
+code_part = partial(compile, sys.argv[1], __file__)
+
 try:
     mode = 'eval'
     code = code_part(mode)
@@ -11,19 +13,19 @@ except SyntaxError:
     mode = 'exec'
     code = code_part(mode)
 
-shortcuts = {
-    'run': lambda line, cmd: os.system(cmd.replace('%s', line)),
-    's': lambda line, char, index=0: line.split(char, index+1)[index],
-}
-
+run = lambda cmd, input: os.system(cmd.replace('%s', input))
+a = b = c = None
 i = 1
+lines = iter(sys.stdin)
 try:
-    for line in sys.stdin:
+    for line in lines:
         l = line = line[:-1]
-        for shortcut_name, func in shortcuts.items(): locals()[shortcut_name] = partial(func, line)
+        w = words = l.split()
         out = eval(code, globals(), locals())
         if mode == 'eval' and out:
-            print out
+            if type(out) in (list, tuple):
+                for o in out: print o
+            else: print out
         i += 1
 except KeyboardInterrupt:
     sys.exit(1)
