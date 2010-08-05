@@ -2,11 +2,11 @@
 
 import sys, optparse, time
 
-__version__ = (0, 2)
+__version__ = (0, 3)
 
 parser = optparse.OptionParser(version="%prog "+'.'.join(map(str, __version__)))
 parser.add_option('-f', "--frequency", dest="frequency", default=1.0, type="float",
-                  help="Frequency of data writes in seconds")
+                  help="Frequency in data writes per second")
 parser.add_option('-n', "--num", dest='num', default=1, type="int", help="number of lines to write at a time")
 parser.add_option('-o', '--offset', dest="offset", default=0, type="int", help="line number to start at")
 parser.add_option('-l', '--len', dest="length", default=None, type="int", help="max number of lines to write")
@@ -29,8 +29,11 @@ def main():
         else:
             max_length = None
         
+        sleeptime = 1 / float(opts.frequency)
+
         # start writing lines
         while True:
+            start = time.time()
             for i in xrange(opts.num):
                 # break if at max length
                 if max_length != None:
@@ -41,12 +44,12 @@ def main():
                 sys.stderr.flush()
                 sys.stdout.write(line)
                 sys.stdout.flush()
-            if opts.frequency > 0:
-                time.sleep(opts.frequency)
+            op_time = time.time() - start
+            op_diff = sleeptime - op_time
+            if op_diff > 0:
+                time.sleep(op_diff)
     except StopIteration:
         pass
-    except KeyboardInterrupt:
-        print "Interrupted at line number %s" % lineno
 
 
 if __name__ == '__main__':
